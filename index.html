@@ -30,7 +30,6 @@
     --dl-over-bg:   #3d0000;
     --dl-over:      #f78166;
     --success:      #3fb950;
-    --radius:       10px;
   }
 
   [data-theme="light"] {
@@ -58,20 +57,19 @@
     --success:      #1a7f37;
   }
 
-  /* ── Reset ── */
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
     background: var(--bg);
     color: var(--text);
-    font-family: 'Inter', 'DM Sans', system-ui, sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
     font-size: 14px;
     line-height: 1.5;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     -webkit-font-smoothing: antialiased;
-    transition: background 0.25s, color 0.25s;
+    transition: background 0.25s;
   }
 
   /* ── Top Bar ── */
@@ -79,38 +77,38 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 14px;
-    height: 50px;
+    padding: 0 20px;
+    height: 54px;
     border-bottom: 1px solid var(--border);
     background: var(--surface);
     flex-shrink: 0;
     gap: 12px;
     transition: background 0.25s;
   }
-  
   .topbar-left { display: flex; align-items: center; gap: 12px; }
   .hamburger {
     display: none;
-    width: 32px; height: 32px;
-    background: transparent; border: none;
-    cursor: pointer; color: var(--text);
-    font-size: 1.2rem; padding: 0;
-    align-items: center; justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text);
+    font-size: 1.2rem;
+    padding: 0;
+    align-items: center;
+    justify-content: center;
   }
-  
   .topbar-brand {
     font-family: 'Playfair Display', Georgia, serif;
     font-weight: 600;
-    font-size: 0.95rem;
-    letter-spacing: 0.01em;
+    font-size: 1.1rem;
     color: var(--text-head);
-    white-space: nowrap;
   }
-  
   .topbar-right { display: flex; align-items: center; gap: 8px; }
-  
   .icon-btn {
-    width: 32px; height: 32px;
+    width: 34px;
+    height: 34px;
     border: 1px solid var(--border2);
     background: transparent;
     border-radius: 7px;
@@ -118,25 +116,32 @@
     color: var(--text-muted);
     font-size: 0.9rem;
     transition: all 0.15s;
-    display: flex; align-items: center; justify-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
-  .icon-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--hover-bg); }
+  .icon-btn:hover { border-color: var(--accent); color: var(--accent); }
 
-  /* ── Sidebar ── */
+  /* ── Main Layout ── */
+  .main {
+    display: grid;
+    grid-template-columns: 260px 1fr 380px;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* ── Left Sidebar ── */
   .sidebar {
-    position: relative;
-    width: 280px;
     background: var(--surface);
     border-right: 1px solid var(--border);
     overflow-y: auto;
-    padding: 16px 0;
-    transition: all 0.25s;
+    padding: 20px 0;
+    transition: background 0.25s;
   }
-  .sidebar.open { transform: translateX(0); }
-  
-  .sidebar-section { padding: 0 12px; margin-bottom: 16px; }
+  .sidebar-section { padding: 0 16px; margin-bottom: 20px; }
   .sidebar-title {
-    font-size: 0.67rem;
+    font-size: 0.68rem;
     font-weight: 600;
     color: var(--text-faint);
     text-transform: uppercase;
@@ -144,7 +149,6 @@
     margin-bottom: 8px;
     padding: 0 8px;
   }
-  
   .sidebar-item {
     padding: 8px 12px;
     border-radius: 7px;
@@ -156,81 +160,183 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
   .sidebar-item:hover { background: var(--hover-bg); color: var(--accent); }
   .sidebar-item.active { background: var(--sub-bg); color: var(--accent); font-weight: 600; }
-  
-  .sidebar-icon { font-size: 0.8rem; flex-shrink: 0; width: 16px; text-align: center; }
-  .sidebar-divider { height: 1px; background: var(--border); margin: 12px 0; }
+  .sidebar-icon { font-size: 0.8rem; width: 18px; text-align: center; flex-shrink: 0; }
+  .sidebar-divider { height: 1px; background: var(--border); margin: 16px 0; }
 
-  /* ── Overlay (close sidebar on mobile) ── */
-  .sidebar-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.4);
-    z-index: 80;
-  }
-  .sidebar-overlay.open { display: block; }
-
-  /* ── Main Layout ── */
-  .main-wrapper {
-    display: flex;
-    flex: 1;
-    min-height: 0;
-    overflow: hidden;
-  }
-
-  .layout {
-    display: grid;
-    grid-template-columns: 1fr 300px;
-    flex: 1;
-    min-height: 0;
-    overflow: hidden;
-  }
-
-  .task-panel {
+  /* ── Middle Panel ── */
+  .middle-panel {
     overflow-y: auto;
-    padding: 24px 28px;
-    animation: fadeSlide 0.16s ease;
-  }
-
-  .chart-panel {
-    overflow-y: auto;
-    padding: 22px 18px;
+    padding: 24px 20px;
     display: flex;
     flex-direction: column;
-    gap: 22px;
-    background: var(--surface);
-    border-left: 1px solid var(--border);
-    transition: background 0.25s;
-  }
-  @keyframes fadeSlide {
-    from { opacity: 0; transform: translateX(6px); }
-    to   { opacity: 1; transform: translateX(0); }
+    gap: 24px;
   }
 
-  /* ── Context heading ── */
-  .context-heading { margin-bottom: 20px; }
-  .ctx-label {
-    font-size: 0.68rem;
-    font-weight: 600;
-    color: var(--text-faint);
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
-    margin-bottom: 5px;
+  /* Chart + Overview container */
+  .chart-overview-container {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 20px;
+    align-items: start;
   }
-  .ctx-name {
+
+  .chart-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .chart-wrap { position: relative; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
+  canvas#pieChart { display: block; cursor: default; }
+  .chart-center-label { position: absolute; text-align: center; pointer-events: none; }
+  .cl-num {
     font-family: 'Playfair Display', Georgia, serif;
-    font-size: 1.75rem;
+    font-size: 1.6rem;
     font-weight: 600;
-    letter-spacing: -0.01em;
     color: var(--text-head);
-    line-height: 1.15;
+    line-height: 1;
   }
+  .cl-sub { font-size: 0.6rem; font-weight: 600; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.14em; margin-top: 3px; }
+  .legend { display: flex; flex-direction: column; gap: 3px; margin-top: 10px; }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 6px;
+    transition: background 0.12s;
+    font-size: 0.76rem;
+  }
+  .legend-item:hover { background: var(--hover-bg); }
+  .legend-dot { width: 7px; height: 7px; border-radius: 2px; flex-shrink: 0; }
+  .legend-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
+  .legend-weight { color: var(--text-faint); font-size: 0.7rem; }
+
+  .overview-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .stat-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 14px;
+    transition: all 0.15s;
+    cursor: pointer;
+  }
+  .stat-box:hover { border-color: var(--accent); }
+  .stat-val {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .stat-label { font-size: 0.65rem; font-weight: 600; color: var(--text-faint); margin-top: 5px; text-transform: uppercase; letter-spacing: 0.1em; }
+
+  /* Details card (due soon/overdue) */
+  .details-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px;
+  }
+  .details-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .details-title { font-family: 'Inter', sans-serif; font-size: 0.92rem; font-weight: 600; color: var(--text-head); }
+  .details-count { font-size: 0.72rem; font-weight: 600; color: var(--text-faint); background: var(--surface); padding: 3px 9px; border-radius: 5px; }
+  .details-list { display: flex; flex-direction: column; gap: 8px; }
+  .detail-item {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 11px 13px;
+    background: var(--surface);
+    transition: all 0.15s;
+  }
+  .detail-item:hover { border-color: var(--accent); box-shadow: 0 2px 8px var(--shadow); }
+  .detail-item.overdue { border-left: 2px solid var(--dl-over); }
+  .di-name { font-weight: 600; font-size: 0.87rem; color: var(--text-head); margin-bottom: 4px; }
+  .di-meta { display: flex; gap: 8px; font-size: 0.7rem; color: var(--text-faint); }
+  .di-tag { background: var(--sub-bg); padding: 2px 7px; border-radius: 4px; color: var(--dl-fut); }
+  .di-tag.overdue-tag { background: var(--dl-over-bg); color: var(--dl-over); }
+
+  /* ── Right Panel: Projects ── */
+  .projects-panel {
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 24px 18px;
+    transition: background 0.25s;
+  }
+  .panel-header { margin-bottom: 18px; }
+  .panel-label { font-size: 0.68rem; font-weight: 600; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 5px; }
+  .panel-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-head);
+    line-height: 1.2;
+  }
+
+  /* ── Task list ── */
+  .task-list { display: flex; flex-direction: column; gap: 7px; }
+  .task-node {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface2);
+    overflow: hidden;
+    transition: all 0.15s;
+  }
+  .task-node:hover { border-color: var(--border2); box-shadow: 0 2px 8px var(--shadow); }
+  .task-node.overdue { border-left: 2px solid var(--dl-over); }
+  .task-row { display: flex; align-items: center; gap: 10px; padding: 11px 12px; }
+  .task-swatch { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+  .task-info { flex: 1; min-width: 0; }
+  .task-name {
+    font-weight: 500;
+    font-size: 0.88rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    color: var(--text-head);
+    transition: color 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .task-name:hover { color: var(--accent); }
+  .drill-icon { font-size: 0.5rem; color: var(--text-dim); opacity: 0; transition: opacity 0.15s, transform 0.15s; }
+  .task-name:hover .drill-icon { opacity: 1; transform: translateX(2px); }
+  .task-meta { display: flex; gap: 6px; margin-top: 3px; flex-wrap: wrap; }
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 1px 7px;
+    border-radius: 4px;
+    font-size: 0.68rem;
+    font-weight: 500;
+  }
+  .tag-deadline { background: var(--sub-bg); color: var(--dl-fut); }
+  .tag-soon { background: var(--dl-soon-bg); color: var(--dl-soon); }
+  .tag-overdue { background: var(--dl-over-bg); color: var(--dl-over); }
+  .tag-weight { color: var(--text-faint); background: transparent; font-weight: 400; }
+  .tag-children { color: var(--text-dim); background: transparent; font-weight: 400; }
+  .task-actions { display: flex; gap: 3px; flex-shrink: 0; opacity: 0; transition: opacity 0.15s; }
+  .task-row:hover .task-actions { opacity: 1; }
+  .weight-bar-wrap { height: 1.5px; background: var(--border); }
+  .weight-bar { height: 100%; transition: width 0.4s ease; opacity: 0.7; }
+
+  /* ── Empty state ── */
+  .empty-state { text-align: center; padding: 50px 20px; color: var(--text-muted); }
+  .empty-state .big { font-size: 2rem; margin-bottom: 10px; opacity: 0.6; }
+  .empty-state p { font-size: 0.82rem; line-height: 1.8; color: var(--text-faint); }
+  .empty-state strong { color: var(--accent); font-weight: 500; }
 
   /* ── Buttons ── */
   .btn {
@@ -242,127 +348,18 @@
     border: 1px solid var(--border2);
     background: var(--surface2);
     color: var(--text);
-    font-family: 'Inter', sans-serif;
     font-size: 0.78rem;
     font-weight: 500;
-    letter-spacing: 0.01em;
     cursor: pointer;
     transition: all 0.15s;
-    white-space: nowrap;
   }
-  .btn:hover { border-color: var(--accent); color: var(--accent); background: var(--hover-bg); }
-  .btn-primary {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #fff;
-    font-weight: 500;
-  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
   [data-theme="dark"] .btn-primary { color: #0d1117; }
   .btn-primary:hover { background: var(--accent2); border-color: var(--accent2); }
   .btn-ghost { border-color: transparent; background: transparent; color: var(--text-muted); }
   .btn-ghost:hover { color: var(--text); border-color: var(--border2); background: var(--surface2); }
   .btn-sm { padding: 3px 9px; font-size: 0.72rem; }
-  .btn-back {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 0.76rem;
-    font-weight: 500;
-    color: var(--text-muted);
-    cursor: pointer;
-    background: none;
-    border: none;
-    font-family: 'Inter', sans-serif;
-    letter-spacing: 0.01em;
-    padding: 0;
-    transition: color 0.15s;
-  }
-  .btn-back:hover { color: var(--accent); }
-
-  /* ── Section label ── */
-  .section-label {
-    font-size: 0.67rem;
-    font-weight: 600;
-    color: var(--text-faint);
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
-    margin-bottom: 10px;
-  }
-
-  /* ── Task list ── */
-  .task-list { display: flex; flex-direction: column; gap: 6px; }
-
-  .task-node {
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    background: var(--surface2);
-    overflow: hidden;
-    transition: border-color 0.15s, box-shadow 0.15s;
-  }
-  .task-node:hover {
-    border-color: var(--border2);
-    box-shadow: 0 2px 8px var(--shadow);
-    background: var(--hover-bg);
-  }
-  .task-node.overdue { border-left: 2px solid var(--dl-over); }
-
-  .task-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 11px 13px;
-    user-select: none;
-  }
-  .task-swatch { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; opacity: 0.9; }
-  .task-info { flex: 1; min-width: 0; }
-
-  .task-name {
-    font-family: 'Inter', sans-serif;
-    font-weight: 500;
-    font-size: 0.875rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    color: var(--text-head);
-    transition: color 0.15s;
-    letter-spacing: 0.005em;
-  }
-  .task-name:hover { color: var(--accent); }
-  .drill-icon { font-size: 0.5rem; color: var(--text-dim); opacity: 0; transition: opacity 0.15s, transform 0.15s; flex-shrink: 0; }
-  .task-name:hover .drill-icon { opacity: 1; transform: translateX(2px); }
-
-  .task-meta { display: flex; gap: 6px; margin-top: 3px; flex-wrap: wrap; }
-  .tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    padding: 1px 7px;
-    border-radius: 4px;
-    font-size: 0.68rem;
-    font-weight: 500;
-    letter-spacing: 0.01em;
-  }
-  .tag-deadline { background: var(--sub-bg); color: var(--dl-fut); }
-  .tag-soon { background: var(--dl-soon-bg); color: var(--dl-soon); }
-  .tag-overdue { background: var(--dl-over-bg); color: var(--dl-over); }
-  .tag-weight { color: var(--text-faint); background: transparent; font-weight: 400; }
-  .tag-children { color: var(--text-dim); background: transparent; font-weight: 400; }
-
-  .task-actions { display: flex; gap: 3px; flex-shrink: 0; opacity: 0; transition: opacity 0.15s; }
-  .task-row:hover .task-actions { opacity: 1; }
-
-  .weight-bar-wrap { height: 1.5px; background: var(--border); }
-  .weight-bar { height: 100%; transition: width 0.4s ease; opacity: 0.7; }
-
-  /* ── Empty state ── */
-  .empty-state { text-align: center; padding: 64px 20px; color: var(--text-muted); }
-  .empty-state .big { font-size: 2rem; margin-bottom: 12px; opacity: 0.6; }
-  .empty-state p { font-size: 0.82rem; line-height: 1.8; color: var(--text-faint); font-weight: 400; }
-  .empty-state strong { color: var(--accent); font-weight: 500; }
 
   /* ── Modal ── */
   .modal-overlay {
@@ -396,18 +393,9 @@
     font-weight: 600;
     margin-bottom: 20px;
     color: var(--text-head);
-    letter-spacing: 0.01em;
   }
   .field { margin-bottom: 15px; }
-  .field label {
-    display: block;
-    font-size: 0.69rem;
-    font-weight: 600;
-    color: var(--text-faint);
-    margin-bottom: 6px;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-  }
+  .field label { display: block; font-size: 0.69rem; font-weight: 600; color: var(--text-faint); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.12em; }
   .field input {
     width: 100%;
     background: var(--input-bg);
@@ -415,9 +403,7 @@
     border-radius: 8px;
     padding: 8px 12px;
     color: var(--text);
-    font-family: 'Inter', sans-serif;
     font-size: 0.85rem;
-    font-weight: 400;
     outline: none;
     transition: border-color 0.15s;
   }
@@ -429,19 +415,6 @@
   .range-hint { font-size: 0.67rem; color: var(--text-dim); }
   .range-val { font-size: 0.82rem; font-weight: 600; color: var(--accent); }
   .modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 22px; }
-
-  /* ── Chart ── */
-  .chart-wrap { position: relative; display: flex; align-items: center; justify-content: center; }
-  canvas#pieChart { display: block; cursor: default; }
-  .chart-center-label { position: absolute; text-align: center; pointer-events: none; }
-  .cl-num {
-    font-family: 'Playfair Display', Georgia, serif;
-    font-size: 1.7rem;
-    font-weight: 600;
-    color: var(--text-head);
-    line-height: 1;
-  }
-  .cl-sub { font-size: 0.6rem; font-weight: 600; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.14em; margin-top: 3px; }
 
   .chart-tooltip {
     position: absolute;
@@ -458,131 +431,79 @@
     box-shadow: 0 6px 20px var(--shadow);
   }
   .chart-tooltip.visible { opacity: 1; }
-  .tt-name { font-family: 'Inter', sans-serif; font-weight: 600; font-size: 0.8rem; color: var(--text-head); }
+  .tt-name { font-weight: 600; font-size: 0.8rem; color: var(--text-head); }
   .tt-sub { color: var(--text-muted); margin-top: 2px; font-size: 0.72rem; }
   .tt-hint { color: var(--accent); margin-top: 5px; font-size: 0.67rem; font-weight: 500; }
 
-  .legend { display: flex; flex-direction: column; gap: 2px; margin-top: 12px; }
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    cursor: pointer;
-    padding: 5px 7px;
-    border-radius: 7px;
-    transition: background 0.12s;
-    color: var(--text);
-  }
-  .legend-item:hover { background: var(--hover-bg); }
-  .legend-dot { width: 7px; height: 7px; border-radius: 2px; flex-shrink: 0; }
-  .legend-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.78rem; font-weight: 500; }
-  .legend-weight { color: var(--text-faint); font-size: 0.69rem; }
-
-  /* ── Stats ── */
-  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
-  .stat-box {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 9px;
-    padding: 11px 13px;
-    transition: background 0.25s;
-    cursor: pointer;
-  }
-  .stat-box:hover { border-color: var(--accent); }
-  .stat-val {
-    font-family: 'Playfair Display', Georgia, serif;
-    font-size: 1.5rem;
+  .section-label {
+    font-size: 0.68rem;
     font-weight: 600;
-    color: var(--accent);
-    line-height: 1;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    margin-bottom: 10px;
   }
-  .stat-label { font-size: 0.63rem; font-weight: 600; color: var(--text-faint); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.1em; }
-
-  .panel-divider { height: 1px; background: var(--border); }
-
-  /* ── Details Card ── */
-  .details-card {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 16px;
-    margin-top: 12px;
-    animation: fadeSlide 0.16s ease;
-  }
-  .details-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-  .details-title { font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 600; color: var(--text-head); }
-  .details-count { font-size: 0.72rem; font-weight: 600; color: var(--text-faint); background: var(--surface); padding: 3px 8px; border-radius: 4px; }
-  .details-list { display: flex; flex-direction: column; gap: 8px; }
-  .detail-item {
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 12px;
-    background: var(--surface);
-    transition: border-color 0.15s, box-shadow 0.15s;
-  }
-  .detail-item:hover { border-color: var(--accent); box-shadow: 0 2px 8px var(--shadow); }
-  .detail-item.overdue { border-left: 2px solid var(--dl-over); }
-  .di-name { font-weight: 600; font-size: 0.85rem; color: var(--text-head); margin-bottom: 3px; }
-  .di-meta { display: flex; gap: 8px; font-size: 0.68rem; color: var(--text-faint); }
-  .di-tag { background: var(--sub-bg); padding: 1px 6px; border-radius: 3px; color: var(--dl-fut); }
-  .di-tag.overdue-tag { background: var(--dl-over-bg); color: var(--dl-over); }
 
   /* ── Scrollbar ── */
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
 
-  /* ── Tablet/Mobile ── */
+  /* ── Overlay for mobile sidebar ── */
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 89;
+  }
+  .sidebar-overlay.open { display: block; }
+
+  /* ── Mobile ── */
   @media (max-width: 1200px) {
-    .main-wrapper { flex-direction: column; }
-    .sidebar { border-right: none; border-bottom: 1px solid var(--border); height: auto; max-height: 200px; width: 100%; }
-    .layout { grid-template-columns: 1fr; }
-    .chart-panel { border-left: none; border-top: 1px solid var(--border); }
+    .main { grid-template-columns: 260px 1fr; }
+    .projects-panel { display: none; }
+    .chart-overview-container { grid-template-columns: 1fr; }
   }
 
   @media (max-width: 768px) {
     .hamburger { display: flex; }
-    .topbar-brand { display: none; }
+    .topbar-brand { font-size: 0.95rem; }
+    .main { grid-template-columns: 1fr; }
     .sidebar {
       position: fixed;
       left: 0;
-      top: 50px;
+      top: 54px;
       bottom: 0;
-      z-index: 90;
       width: 280px;
-      border-right: 1px solid var(--border);
-      border-bottom: none;
+      z-index: 90;
       transform: translateX(-100%);
-      height: auto;
-      max-height: none;
+      transition: transform 0.3s ease;
     }
     .sidebar.open { transform: translateX(0); }
-    .main-wrapper { flex-direction: column; }
-    .layout { grid-template-columns: 1fr; overflow: visible; }
-    .chart-panel { border-left: none; border-top: 1px solid var(--border); overflow: visible; }
-    .task-panel { overflow: visible; }
-    body { overflow-y: auto; }
+    .projects-panel { display: block; border-left: none; border-top: 1px solid var(--border); }
+    .chart-overview-container { grid-template-columns: 1fr; }
     canvas#pieChart { width: 200px !important; height: 200px !important; }
   }
 </style>
 </head>
 <body>
 
-<!-- Top Bar -->
 <div class="topbar">
   <div class="topbar-left">
     <button class="hamburger" id="hamburger" onclick="toggleSidebar()">☰</button>
     <div class="topbar-brand">Dashboard</div>
   </div>
   <div class="topbar-right">
-    <button class="icon-btn" id="themeToggle" title="Toggle theme" onclick="toggleTheme()">🌙</button>
-    <button class="btn btn-primary" id="addBtn" onclick="openAddModal()">+ Add</button>
+    <button class="icon-btn" id="themeToggle" onclick="toggleTheme()">🌙</button>
+    <button class="btn btn-primary" onclick="openAddModal()">+ Add</button>
   </div>
 </div>
 
-<!-- Sidebar -->
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
-<div class="main-wrapper">
+
+<div class="main">
+  <!-- Left Sidebar -->
   <div class="sidebar" id="sidebar">
     <div class="sidebar-section">
       <div class="sidebar-title">Navigate</div>
@@ -634,18 +555,15 @@
     </div>
   </div>
 
-  <!-- Main Layout -->
-  <div class="layout">
-    <div class="task-panel" id="taskPanel">
-      <div class="context-heading" id="contextHeading"></div>
-      <div class="task-list" id="taskList"></div>
-    </div>
-
-    <div class="chart-panel">
-      <div>
+  <!-- Middle Panel -->
+  <div class="middle-panel">
+    <!-- Chart + Overview Container -->
+    <div class="chart-overview-container">
+      <!-- Chart Section -->
+      <div class="chart-section">
         <div class="section-label">Weight Distribution</div>
         <div class="chart-wrap" id="chartWrap">
-          <canvas id="pieChart" width="252" height="252"></canvas>
+          <canvas id="pieChart" width="240" height="240"></canvas>
           <div class="chart-center-label">
             <div class="cl-num" id="centerNum">0</div>
             <div class="cl-sub" id="centerSub">projects</div>
@@ -654,13 +572,25 @@
         </div>
         <div class="legend" id="chartLegend"></div>
       </div>
-      <div class="panel-divider"></div>
-      <div>
+
+      <!-- Overview Section -->
+      <div class="overview-section">
         <div class="section-label">Overview</div>
         <div class="stats-grid" id="statsGrid"></div>
-        <div id="detailsCard"></div>
       </div>
     </div>
+
+    <!-- Details Card (Due Soon / Overdue) -->
+    <div id="detailsCard"></div>
+  </div>
+
+  <!-- Right Panel: Projects -->
+  <div class="projects-panel">
+    <div class="panel-header">
+      <div class="panel-label">Current Level</div>
+      <div class="panel-title" id="panelTitle">Projects</div>
+    </div>
+    <div class="task-list" id="taskList"></div>
   </div>
 </div>
 
@@ -707,8 +637,14 @@ function applyTheme(t) {
 function toggleTheme() { applyTheme(currentTheme === 'dark' ? 'light' : 'dark'); }
 
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
-function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sidebarOverlay').classList.toggle('open'); }
-function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sidebarOverlay').classList.remove('open'); }
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('open');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
+}
 
 // ─── Storage ──────────────────────────────────────────────────────────────────
 const STORAGE_KEY = 'tasktree_v3';
@@ -716,12 +652,12 @@ function loadData() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY))
 function saveData(d) { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); }
 
 // ─── State ────────────────────────────────────────────────────────────────────
-let tasks     = loadData();
+let tasks = loadData();
 let viewStack = [];
 let editingId = null;
 let detailsMode = 'soon';
 
-// ─── Colours ──────────────────────────────────────────────────────────────────
+// ─── Colors ───────────────────────────────────────────────────────────────────
 const DARK_COLORS  = ['#58a6ff','#3fb950','#f78166','#ffa657','#bc8cff','#79c0ff','#56d364','#ff7b72','#d2a8ff','#7ee787','#ffb77c','#a5d6ff'];
 const LIGHT_COLORS = ['#0969da','#1a7f37','#cf222e','#9a6700','#8250df','#0550ae','#116329','#a40e26','#6639ba','#1d7b3c','#7d4e00','#033d8b'];
 const getColor = i => (currentTheme === 'dark' ? DARK_COLORS : LIGHT_COLORS)[i % 12];
@@ -829,33 +765,27 @@ function confirmDelete(id) {
 
 // ─── Render ───────────────────────────────────────────────────────────────────
 function render() {
-  renderContextHeading();
+  renderPanelTitle();
   renderTasks();
   renderChart();
   renderStats();
   renderSidebarNav();
 }
 
-function renderContextHeading() {
-  const el = document.getElementById('contextHeading');
+function renderPanelTitle() {
+  const title = document.getElementById('panelTitle');
   if (!viewStack.length) {
-    el.innerHTML = `<div class="ctx-label">Home</div><div class="ctx-name">Projects</div>`;
+    title.textContent = 'Projects';
   } else {
     const ct = getCurrentTask();
-    const pi = viewStack.length-2;
-    const backLabel = pi < 0 ? 'Home' : (findTask(viewStack[pi])?.name || 'Back');
-    const parentLabel = pi < 0 ? 'Project' : 'Subtask of ' + (findTask(viewStack[pi])?.name||'');
-    el.innerHTML = `
-      <button class="btn-back" onclick="navigateToIndex(${pi})">← ${backLabel}</button>
-      <div class="ctx-label" style="margin-top:12px">${parentLabel}</div>
-      <div class="ctx-name">${ct?.name||''}</div>`;
+    title.textContent = ct?.name || '';
   }
 }
 
 function renderTasks() {
-  const list  = document.getElementById('taskList');
+  const list = document.getElementById('taskList');
   const items = getCurrentList();
-  const home  = !viewStack.length;
+  const home = !viewStack.length;
   if (!items.length) {
     list.innerHTML = `<div class="empty-state">
       <div class="big">${home ? '◎' : '○'}</div>
@@ -869,13 +799,13 @@ function renderTasks() {
 }
 
 function buildTaskEl(task, colorIdx, totalWeight) {
-  const el      = document.createElement('div');
-  const color   = getColor(colorIdx);
+  const el = document.createElement('div');
+  const color = getColor(colorIdx);
   const overdue = isOverdue(task);
-  const dl      = daysLeft(task.deadline);
-  const pct     = totalWeight > 0 ? ((task.weightage/totalWeight)*100).toFixed(1) : 0;
-  const cc      = (task.children||[]).length;
-  el.className  = `task-node${overdue?' overdue':''}`;
+  const dl = daysLeft(task.deadline);
+  const pct = totalWeight > 0 ? ((task.weightage/totalWeight)*100).toFixed(1) : 0;
+  const cc = (task.children||[]).length;
+  el.className = `task-node${overdue?' overdue':''}`;
   el.dataset.id = task.id;
 
   let deadlineTag = '';
@@ -901,7 +831,7 @@ function buildTaskEl(task, colorIdx, totalWeight) {
       </div>
       <div class="task-actions" onclick="event.stopPropagation()">
         <button class="btn btn-sm btn-ghost" onclick="openEditModal('${task.id}')" title="Edit">✎</button>
-        <button class="btn btn-sm btn-danger" onclick="confirmDelete('${task.id}')" title="Delete">✕</button>
+        <button class="btn btn-sm btn-ghost" onclick="confirmDelete('${task.id}')" title="Delete">✕</button>
       </div>
     </div>
     <div class="weight-bar-wrap">
@@ -911,10 +841,10 @@ function buildTaskEl(task, colorIdx, totalWeight) {
 }
 
 // ─── Chart ────────────────────────────────────────────────────────────────────
-const canvas  = document.getElementById('pieChart');
-const ctx2d   = canvas.getContext('2d');
+const canvas = document.getElementById('pieChart');
+const ctx2d = canvas.getContext('2d');
 const tooltip = document.getElementById('chartTooltip');
-let segments  = [];
+let segments = [];
 
 function getCSSVar(v) { return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
 
@@ -932,7 +862,7 @@ function renderChart() {
     ctx2d.beginPath();
     ctx2d.arc(W/2,H/2,W*0.37,0,Math.PI*2);
     ctx2d.strokeStyle = getCSSVar('--border2');
-    ctx2d.lineWidth   = 22;
+    ctx2d.lineWidth = 22;
     ctx2d.stroke();
     return;
   }
@@ -941,7 +871,7 @@ function renderChart() {
   let angle = -Math.PI/2;
 
   items.forEach((task,i)=>{
-    const frac  = task.weightage/total;
+    const frac = task.weightage/total;
     const sweep = frac*Math.PI*2;
     const color = getColor(i);
     const sa=angle+GAP/2, ea=angle+sweep-GAP/2;
@@ -1083,7 +1013,7 @@ function showAnalytics(type) {
   alert(`Analytics: ${type}\n\nComing soon — placeholder for ${type} view.`);
 }
 
-// ─── Export/Import Stub ───────────────────────────────────────────────────────
+// ─── Export/Import ────────────────────────────────────────────────────────────
 function exportTaskData() {
   const data = JSON.stringify(tasks, null, 2);
   const blob = new Blob([data], {type:'application/json'});
