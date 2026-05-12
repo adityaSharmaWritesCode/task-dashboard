@@ -239,6 +239,21 @@
   }
   .stat-label { font-size: 0.65rem; font-weight: 600; color: var(--text-faint); margin-top: 5px; text-transform: uppercase; letter-spacing: 0.1em; }
 
+  /* Completion progress bar */
+  .completion-bar {
+    width: 100%;
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-top: 8px;
+    overflow: hidden;
+  }
+  .completion-fill {
+    height: 100%;
+    background: var(--success);
+    transition: width 0.4s ease;
+  }
+
   /* Details card (due soon/overdue) */
   .details-card {
     background: var(--surface2);
@@ -293,9 +308,17 @@
   }
   .task-node:hover { border-color: var(--border2); box-shadow: 0 2px 8px var(--shadow); }
   .task-node.overdue { border-left: 2px solid var(--dl-over); }
+  .task-node.done { opacity: 0.5; }
+
   .task-row { display: flex; align-items: center; gap: 10px; padding: 11px 12px; }
+  .task-checkbox {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    flex-shrink: 0;
+    accent-color: var(--accent);
+  }
   .task-swatch { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
-  .task-info { flex: 1; min-width: 0; }
   .task-name {
     font-weight: 500;
     font-size: 0.88rem;
@@ -309,6 +332,7 @@
     align-items: center;
     gap: 5px;
   }
+  .task-name.task-done { text-decoration: line-through; color: var(--text-faint); }
   .task-name:hover { color: var(--accent); }
   .drill-icon { font-size: 0.5rem; color: var(--text-dim); opacity: 0; transition: opacity 0.15s, transform 0.15s; }
   .task-name:hover .drill-icon { opacity: 1; transform: translateX(2px); }
@@ -444,6 +468,98 @@
     margin-bottom: 10px;
   }
 
+  /* ── Analytics Styles ── */
+  #analyticsView { display: none !important; }
+  #analyticsView.open { display: flex !important; }
+
+  .analytics-section {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .analytics-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--text-head);
+    margin-bottom: 16px;
+  }
+  .analytics-subtitle {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+  }
+
+  /* Burndown Chart */
+  .burndown-container {
+    position: relative;
+    width: 100%;
+    height: 300px;
+    margin-bottom: 20px;
+  }
+  .burndown-canvas {
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Heatmap */
+  .heatmap-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .heatmap-month {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+  }
+  .heatmap-header {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-faint);
+    text-align: center;
+    padding: 4px;
+  }
+  .heatmap-cell {
+    aspect-ratio: 1;
+    border-radius: 4px;
+    border: 1px solid var(--border2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.65rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .heatmap-cell:hover { border-color: var(--accent); }
+  .heatmap-cell.empty { background: var(--surface); color: var(--text-dim); }
+  .heatmap-cell.low { background: rgba(88, 166, 255, 0.2); color: var(--dl-fut); }
+  .heatmap-cell.med { background: rgba(88, 166, 255, 0.5); color: var(--text-head); }
+  .heatmap-cell.high { background: rgba(88, 166, 255, 0.85); color: var(--text-head); }
+
+  .heatmap-month-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-faint);
+    margin-top: 16px;
+    margin-bottom: 6px;
+  }
+
+  .heatmap-legend {
+    display: flex;
+    gap: 16px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    font-size: 0.75rem;
+    color: var(--text-faint);
+  }
+  .heatmap-legend-item { display: flex; align-items: center; gap: 6px; }
+  .heatmap-legend-dot { width: 12px; height: 12px; border-radius: 3px; }
+
   /* ── Scrollbar ── */
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
@@ -557,6 +673,16 @@
 
   <!-- Middle Panel -->
   <div class="middle-panel">
+    <!-- Analytics View Container (hidden by default) -->
+    <div id="analyticsView" style="display: none; flex-direction: column; gap: 20px;">
+      <button class="btn btn-ghost" onclick="closeAnalyticsView()" style="align-self: flex-start;">← Back</button>
+      <div id="analyticsContent"></div>
+    </div>
+
+    <!-- Default View -->
+    <div id="defaultView">
+    <!-- Default View -->
+    <div id="defaultView">
     <!-- Chart + Overview Container -->
     <div class="chart-overview-container">
       <!-- Chart Section -->
@@ -582,6 +708,7 @@
 
     <!-- Details Card (Due Soon / Overdue) -->
     <div id="detailsCard"></div>
+    </div>
   </div>
 
   <!-- Right Panel: Projects -->
@@ -589,6 +716,7 @@
     <div class="panel-header">
       <div class="panel-label">Current Level</div>
       <div class="panel-title" id="panelTitle">Projects</div>
+      <button class="btn btn-sm" id="toggleDoneBtn" onclick="toggleShowDone()" style="margin-top: 8px;">Hide Done</button>
     </div>
     <div class="task-list" id="taskList"></div>
   </div>
@@ -648,7 +776,23 @@ function closeSidebar() {
 
 // ─── Storage ──────────────────────────────────────────────────────────────────
 const STORAGE_KEY = 'tasktree_v3';
-function loadData() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; } }
+function loadData() {
+  try {
+    let data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    // Migrate old tasks to add new fields if missing
+    const today = new Date().toISOString().split('T')[0];
+    const migrateTask = (task) => {
+      if (!task.createdAt) task.createdAt = today;
+      if (!task.hasOwnProperty('done')) task.done = false;
+      if (!task.completedAt) task.completedAt = null;
+      if (task.children) task.children.forEach(migrateTask);
+    };
+    data.forEach(migrateTask);
+    return data;
+  } catch {
+    return [];
+  }
+}
 function saveData(d) { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); }
 
 // ─── State ────────────────────────────────────────────────────────────────────
@@ -656,6 +800,7 @@ let tasks = loadData();
 let viewStack = [];
 let editingId = null;
 let detailsMode = 'soon';
+let showDone = true;  // Toggle to hide/show completed tasks
 
 // ─── Colors ───────────────────────────────────────────────────────────────────
 const DARK_COLORS  = ['#58a6ff','#3fb950','#f78166','#ffa657','#bc8cff','#79c0ff','#56d364','#ff7b72','#d2a8ff','#7ee787','#ffb77c','#a5d6ff'];
@@ -743,13 +888,39 @@ function saveTask() {
     const t = findTask(editingId);
     if (t) Object.assign(t, {name, deadline, weightage});
   } else {
-    getCurrentList().push({id:uid(), name, deadline, weightage, children:[]});
+    const now = new Date().toISOString().split('T')[0];
+    getCurrentList().push({
+      id: uid(),
+      name,
+      deadline,
+      weightage,
+      children: [],
+      createdAt: now,
+      completedAt: null,
+      done: false
+    });
   }
   saveData(tasks);
   closeModal();
   render();
 }
 document.getElementById('modalOverlay').addEventListener('click', function(e){ if(e.target===this) closeModal(); });
+
+// ─── Toggle Done ──────────────────────────────────────────────────────────────
+function toggleTaskDone(id) {
+  const t = findTask(id);
+  if (!t) return;
+  t.done = !t.done;
+  t.completedAt = t.done ? new Date().toISOString().split('T')[0] : null;
+  saveData(tasks);
+  render();
+}
+
+function toggleShowDone() {
+  showDone = !showDone;
+  document.getElementById('toggleDoneBtn').textContent = showDone ? 'Hide Done' : 'Show Done';
+  render();
+}
 
 // ─── Delete ───────────────────────────────────────────────────────────────────
 function confirmDelete(id) {
@@ -784,7 +955,13 @@ function renderPanelTitle() {
 
 function renderTasks() {
   const list = document.getElementById('taskList');
-  const items = getCurrentList();
+  let items = getCurrentList();
+  
+  // Filter out done tasks if showDone is false
+  if (!showDone) {
+    items = items.filter(t => !t.done);
+  }
+  
   const home = !viewStack.length;
   if (!items.length) {
     list.innerHTML = `<div class="empty-state">
@@ -805,7 +982,7 @@ function buildTaskEl(task, colorIdx, totalWeight) {
   const dl = daysLeft(task.deadline);
   const pct = totalWeight > 0 ? ((task.weightage/totalWeight)*100).toFixed(1) : 0;
   const cc = (task.children||[]).length;
-  el.className = `task-node${overdue?' overdue':''}`;
+  el.className = `task-node${overdue?' overdue':''}${task.done?' done':''}`;
   el.dataset.id = task.id;
 
   let deadlineTag = '';
@@ -818,9 +995,10 @@ function buildTaskEl(task, colorIdx, totalWeight) {
 
   el.innerHTML = `
     <div class="task-row">
+      <input type="checkbox" class="task-checkbox" ${task.done?'checked':''} onchange="toggleTaskDone('${task.id}')" onclick="event.stopPropagation()" />
       <div class="task-swatch" style="background:${color}"></div>
       <div class="task-info">
-        <div class="task-name" onclick="navigateTo('${task.id}')">
+        <div class="task-name ${task.done?'task-done':''}" onclick="navigateTo('${task.id}')">
           ${task.name} <span class="drill-icon">▶</span>
         </div>
         <div class="task-meta">
@@ -849,7 +1027,7 @@ let segments = [];
 function getCSSVar(v) { return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
 
 function renderChart() {
-  const items = getCurrentList();
+  const items = getCurrentList().filter(t => !t.done);  // Exclude done tasks from chart
   const total = items.reduce((s,t)=>s+(t.weightage||0),0);
   const W = canvas.width, H = canvas.height;
   ctx2d.clearRect(0,0,W,H);
@@ -948,10 +1126,19 @@ function getTasksFromList(l=tasks) {
 }
 
 function renderStats() {
+  const allItems = getCurrentList();
+  const doneCount = allItems.filter(t => t.done).length;
+  const totalCount = allItems.length;
+  const completionPct = totalCount > 0 ? (doneCount / totalCount * 100).toFixed(0) : 0;
   const ov=countOverdue(), sn=countSoon();
+  
   document.getElementById('statsGrid').innerHTML=`
     <div class="stat-box" onclick="showDetails('soon')"><div class="stat-val">${countAll()}</div><div class="stat-label">Total</div></div>
-    <div class="stat-box" onclick="showDetails('soon')"><div class="stat-val">${getCurrentList().length}</div><div class="stat-label">This level</div></div>
+    <div class="stat-box" onclick="toggleShowDone()">
+      <div class="stat-val" style="color:var(--success)">${completionPct}%</div>
+      <div class="stat-label">Done</div>
+      <div class="completion-bar"><div class="completion-fill" style="width:${completionPct}%"></div></div>
+    </div>
     <div class="stat-box" onclick="showDetails('overdue')"><div class="stat-val" style="color:${ov?'var(--dl-over)':'var(--text-dim)'}">${ov}</div><div class="stat-label">Overdue</div></div>
     <div class="stat-box" onclick="showDetails('soon')"><div class="stat-val" style="${sn?'color:var(--dl-soon)':'color:var(--text-dim)'}">${sn}</div><div class="stat-label">Due soon</div></div>`;
   renderDetails();
@@ -1010,10 +1197,243 @@ function renderDetails() {
 
 // ─── Analytics Stub ───────────────────────────────────────────────────────────
 function showAnalytics(type) {
-  alert(`Analytics: ${type}\n\nComing soon — placeholder for ${type} view.`);
+  document.getElementById('defaultView').style.display = 'none';
+  document.getElementById('analyticsView').classList.add('open');
+  
+  if (type === 'burndown') {
+    renderBurndownChart();
+  } else if (type === 'heatmap') {
+    renderHeatmap();
+  } else {
+    // Placeholder for other analytics
+    document.getElementById('analyticsContent').innerHTML = `
+      <div class="analytics-section">
+        <div class="analytics-title">${type.charAt(0).toUpperCase() + type.slice(1)}</div>
+        <div class="analytics-subtitle">Coming soon</div>
+      </div>`;
+  }
 }
 
-// ─── Export/Import ────────────────────────────────────────────────────────────
+function closeAnalyticsView() {
+  document.getElementById('analyticsView').classList.remove('open');
+  document.getElementById('defaultView').style.display = '';
+}
+
+// ─── Burndown Chart ───────────────────────────────────────────────────────────
+function renderBurndownChart() {
+  const allTasks = getTasksFromList();
+  
+  // Group tasks by week
+  const weeks = {};
+  allTasks.forEach(task => {
+    const createdDate = new Date(task.createdAt);
+    const weekStart = new Date(createdDate);
+    weekStart.setDate(createdDate.getDate() - createdDate.getDay());
+    const weekKey = weekStart.toISOString().split('T')[0];
+    
+    if (!weeks[weekKey]) weeks[weekKey] = { created: 0, completed: 0, weight: 0 };
+    weeks[weekKey].created += 1;
+    weeks[weekKey].weight += task.weightage || 0;
+    if (task.done) weeks[weekKey].completed += 1;
+  });
+
+  const sortedWeeks = Object.keys(weeks).sort();
+  const labels = sortedWeeks.map(w => new Date(w).toLocaleDateString('en-GB', {month:'short', day:'numeric'}));
+  const createdData = [];
+  const completedData = [];
+  let cumulativeCreated = 0;
+  let cumulativeCompleted = 0;
+
+  sortedWeeks.forEach(week => {
+    cumulativeCreated += weeks[week].created;
+    cumulativeCompleted += weeks[week].completed;
+    createdData.push(cumulativeCreated);
+    completedData.push(cumulativeCompleted);
+  });
+
+  const html = `
+    <div class="analytics-section">
+      <div class="analytics-title">Burndown Chart</div>
+      <div class="analytics-subtitle">Tasks created vs completed over time</div>
+      <canvas id="burndownCanvas" width="800" height="300" style="width:100%; border-radius:8px; margin-bottom:16px;"></canvas>
+      <div style="font-size:0.75rem; color:var(--text-faint); display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        <div>
+          <div style="color:var(--accent); font-weight:600; font-size:1rem;">Total Created</div>
+          <div>${cumulativeCreated} tasks</div>
+        </div>
+        <div>
+          <div style="color:var(--success); font-weight:600; font-size:1rem;">Total Completed</div>
+          <div>${cumulativeCompleted} tasks</div>
+        </div>
+      </div>
+    </div>`;
+  
+  document.getElementById('analyticsContent').innerHTML = html;
+  
+  // Draw the burndown chart
+  setTimeout(() => {
+    const canvas = document.getElementById('burndownCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    const padding = 40;
+    const graphW = W - padding * 2;
+    const graphH = H - padding * 2;
+
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = getCSSVar('--text-faint');
+    ctx.font = '12px Inter';
+    ctx.textAlign = 'center';
+
+    // Draw axes
+    ctx.strokeStyle = getCSSVar('--border');
+    ctx.beginPath();
+    ctx.moveTo(padding, padding);
+    ctx.lineTo(padding, H - padding);
+    ctx.lineTo(W - padding, H - padding);
+    ctx.stroke();
+
+    const maxY = Math.max(...createdData, ...completedData) || 1;
+    const scaleX = graphW / (createdData.length - 1 || 1);
+    const scaleY = graphH / maxY;
+
+    // Draw grid
+    ctx.strokeStyle = getCSSVar('--border2');
+    ctx.globalAlpha = 0.3;
+    for (let i = 0; i <= 4; i++) {
+      const y = padding + (graphH / 4) * i;
+      ctx.beginPath();
+      ctx.moveTo(padding, y);
+      ctx.lineTo(W - padding, y);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+
+    // Draw created line
+    ctx.strokeStyle = getCSSVar('--accent');
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    createdData.forEach((v, i) => {
+      const x = padding + i * scaleX;
+      const y = H - padding - v * scaleY;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+
+    // Draw completed line
+    ctx.strokeStyle = getCSSVar('--success');
+    ctx.beginPath();
+    completedData.forEach((v, i) => {
+      const x = padding + i * scaleX;
+      const y = H - padding - v * scaleY;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+
+    // Draw legend
+    ctx.fillStyle = getCSSVar('--accent');
+    ctx.fillRect(W - 160, padding + 10, 12, 12);
+    ctx.fillStyle = getCSSVar('--text');
+    ctx.textAlign = 'left';
+    ctx.fillText('Created', W - 140, padding + 18);
+
+    ctx.fillStyle = getCSSVar('--success');
+    ctx.fillRect(W - 160, padding + 30, 12, 12);
+    ctx.fillStyle = getCSSVar('--text');
+    ctx.fillText('Completed', W - 140, padding + 38);
+  }, 10);
+}
+
+// ─── Heatmap Chart ────────────────────────────────────────────────────────────
+function renderHeatmap() {
+  const allTasks = getTasksFromList();
+  
+  // Group tasks by deadline date
+  const dayTasks = {};
+  allTasks.forEach(task => {
+    if (task.deadline) {
+      if (!dayTasks[task.deadline]) dayTasks[task.deadline] = [];
+      dayTasks[task.deadline].push(task);
+    }
+  });
+
+  // Get current month and next 2 months
+  const months = [];
+  const today = new Date();
+  for (let i = 0; i < 3; i++) {
+    const d = new Date(today.getFullYear(), today.getMonth() + i, 1);
+    months.push(d);
+  }
+
+  const getIntensity = (count) => {
+    if (count === 0) return 'empty';
+    if (count <= 2) return 'low';
+    if (count <= 5) return 'med';
+    return 'high';
+  };
+
+  let html = `
+    <div class="analytics-section">
+      <div class="analytics-title">Deadline Heatmap</div>
+      <div class="analytics-subtitle">Task density by date</div>
+      <div class="heatmap-container">`;
+
+  months.forEach(month => {
+    const monthName = month.toLocaleDateString('en-US', {month:'long', year:'numeric'});
+    const firstDay = new Date(month.getFullYear(), month.getMonth(), 1);
+    const lastDay = new Date(month.getFullYear(), month.getMonth() + 1, 0);
+    const startDay = firstDay.getDay();
+    
+    html += `<div class="heatmap-month-label">${monthName}</div><div class="heatmap-month">`;
+    
+    // Day headers
+    const dayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    dayHeaders.forEach(day => {
+      html += `<div class="heatmap-header">${day}</div>`;
+    });
+
+    // Empty cells for start
+    for (let i = 0; i < startDay; i++) {
+      html += `<div class="heatmap-cell empty"></div>`;
+    }
+
+    // Days of month
+    for (let day = 1; day <= lastDay.getDate(); day++) {
+      const dateStr = `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const count = dayTasks[dateStr]?.length || 0;
+      const intensity = getIntensity(count);
+      html += `<div class="heatmap-cell ${intensity}" title="${dateStr}: ${count} task${count!==1?'s':''}">${count > 0 ? count : ''}</div>`;
+    }
+
+    html += `</div>`;
+  });
+
+  html += `
+      <div class="heatmap-legend">
+        <div class="heatmap-legend-item">
+          <div class="heatmap-legend-dot" style="background:var(--surface);"></div>
+          <span>None</span>
+        </div>
+        <div class="heatmap-legend-item">
+          <div class="heatmap-legend-dot" style="background:rgba(88, 166, 255, 0.2);"></div>
+          <span>1-2 tasks</span>
+        </div>
+        <div class="heatmap-legend-item">
+          <div class="heatmap-legend-dot" style="background:rgba(88, 166, 255, 0.5);"></div>
+          <span>3-5 tasks</span>
+        </div>
+        <div class="heatmap-legend-item">
+          <div class="heatmap-legend-dot" style="background:rgba(88, 166, 255, 0.85);"></div>
+          <span>6+ tasks</span>
+        </div>
+      </div>
+    </div>`;
+
+  document.getElementById('analyticsContent').innerHTML = html;
+}
+
 function exportTaskData() {
   const data = JSON.stringify(tasks, null, 2);
   const blob = new Blob([data], {type:'application/json'});
