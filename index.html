@@ -623,7 +623,7 @@
   <div class="sidebar" id="sidebar">
     <div class="sidebar-section">
       <div class="sidebar-title">Navigate</div>
-      <div class="sidebar-item active" onclick="navigateToIndex(-1); closeSidebar()">
+      <div class="sidebar-item active" onclick="goHome(); closeSidebar()">
         <span class="sidebar-icon">🏠</span>
         <span>Home</span>
       </div>
@@ -837,6 +837,15 @@ function daysLeft(d) { return d ? Math.ceil((new Date(d)-new Date(new Date().toD
 // ─── Navigation ───────────────────────────────────────────────────────────────
 function navigateTo(id) { viewStack.push(id); render(); }
 function navigateToIndex(i) { viewStack = i < 0 ? [] : viewStack.slice(0, i+1); render(); }
+
+function goHome() {
+  viewStack = [];
+  if (document.getElementById('analyticsView').classList.contains('open')) {
+    document.getElementById('analyticsView').classList.remove('open');
+    document.getElementById('defaultView').style.display = '';
+  }
+  render();
+}
 
 // ─── Sidebar Breadcrumb ───────────────────────────────────────────────────────
 function renderSidebarNav() {
@@ -1204,6 +1213,10 @@ function showAnalytics(type) {
     renderBurndownChart();
   } else if (type === 'heatmap') {
     renderHeatmap();
+  } else if (type === 'completion') {
+    renderCompletionRate();
+  } else if (type === 'ontime') {
+    renderOnTimeChart();
   } else {
     // Placeholder for other analytics
     document.getElementById('analyticsContent').innerHTML = `
@@ -1217,6 +1230,9 @@ function showAnalytics(type) {
 function closeAnalyticsView() {
   document.getElementById('analyticsView').classList.remove('open');
   document.getElementById('defaultView').style.display = '';
+  if (viewStack.length > 0) {
+    navigateToIndex(-1);
+  }
 }
 
 // ─── Burndown Chart ───────────────────────────────────────────────────────────
@@ -1252,41 +1268,50 @@ function renderBurndownChart() {
   });
 
   const html = `
-    <div class="analytics-section">
+    <div class="analytics-section" style="padding:24px;">
       <div class="analytics-title">Burndown Chart</div>
-      <div class="analytics-subtitle">Tasks created vs completed over time</div>
-      <canvas id="burndownCanvas" width="800" height="300" style="width:100%; border-radius:8px; margin-bottom:16px;"></canvas>
-      <div style="font-size:0.75rem; color:var(--text-faint); display:grid; grid-template-columns:1fr 1fr; gap:16px;">
-        <div>
-          <div style="color:var(--accent); font-weight:600; font-size:1rem;">Total Created</div>
-          <div>${cumulativeCreated} tasks</div>
+      <div class="analytics-subtitle">Cumulative tasks: created vs completed</div>
+      <div style="position:relative; width:100%; height:400px; margin:24px 0; background:var(--surface); border-radius:8px; border:1px solid var(--border); padding:16px; box-sizing:border-box;">
+        <canvas id="burndownCanvas" style="width:100% !important; height:100% !important;"></canvas>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:20px;">
+        <div style="background:var(--surface); padding:16px; border-radius:8px; border-left:3px solid var(--accent);">
+          <div style="font-size:0.8rem; color:var(--text-faint); margin-bottom:8px;">TOTAL CREATED</div>
+          <div style="font-size:2.2rem; font-weight:800; color:var(--accent);">${cumulativeCreated}</div>
+          <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">tasks added</div>
         </div>
-        <div>
-          <div style="color:var(--success); font-weight:600; font-size:1rem;">Total Completed</div>
-          <div>${cumulativeCompleted} tasks</div>
+        <div style="background:var(--surface); padding:16px; border-radius:8px; border-left:3px solid var(--success);">
+          <div style="font-size:0.8rem; color:var(--text-faint); margin-bottom:8px;">TOTAL COMPLETED</div>
+          <div style="font-size:2.2rem; font-weight:800; color:var(--success);">${cumulativeCompleted}</div>
+          <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">tasks finished</div>
         </div>
       </div>
     </div>`;
   
   document.getElementById('analyticsContent').innerHTML = html;
   
-  // Draw the burndown chart
+  // Draw the burndown chart with better styling
   setTimeout(() => {
     const canvas = document.getElementById('burndownCanvas');
     if (!canvas) return;
+    
+    canvas.width = canvas.offsetWidth * window.devicePixelRatio;
+    canvas.height = canvas.offsetHeight * window.devicePixelRatio;
     const ctx = canvas.getContext('2d');
-    const W = canvas.width, H = canvas.height;
-    const padding = 40;
+    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    
+    const W = canvas.width / window.devicePixelRatio;
+    const H = canvas.height / window.devicePixelRatio;
+    const padding = 50;
     const graphW = W - padding * 2;
     const graphH = H - padding * 2;
 
-    ctx.clearRect(0, 0, W, H);
-    ctx.fillStyle = getCSSVar('--text-faint');
-    ctx.font = '12px Inter';
-    ctx.textAlign = 'center';
+    ctx.fillStyle = getCSSVar('--surface2');
+    ctx.fillRect(0, 0, W, H);
 
     // Draw axes
     ctx.strokeStyle = getCSSVar('--border');
+    ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(padding, padding);
     ctx.lineTo(padding, H - padding);
@@ -1294,13 +1319,13 @@ function renderBurndownChart() {
     ctx.stroke();
 
     const maxY = Math.max(...createdData, ...completedData) || 1;
-    const scaleX = graphW / (createdData.length - 1 || 1);
+    const scaleX = createdData.length > 1 ? graphW / (createdData.length - 1) : 0;
     const scaleY = graphH / maxY;
 
     // Draw grid
     ctx.strokeStyle = getCSSVar('--border2');
-    ctx.globalAlpha = 0.3;
-    for (let i = 0; i <= 4; i++) {
+    ctx.globalAlpha = 0.2;
+    for (let i = 1; i <= 4; i++) {
       const y = padding + (graphH / 4) * i;
       ctx.beginPath();
       ctx.moveTo(padding, y);
@@ -1309,9 +1334,11 @@ function renderBurndownChart() {
     }
     ctx.globalAlpha = 1;
 
-    // Draw created line
+    // Draw created line (accent - thicker, more prominent)
     ctx.strokeStyle = getCSSVar('--accent');
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
     ctx.beginPath();
     createdData.forEach((v, i) => {
       const x = padding + i * scaleX;
@@ -1321,7 +1348,7 @@ function renderBurndownChart() {
     });
     ctx.stroke();
 
-    // Draw completed line
+    // Draw completed line (success - thicker)
     ctx.strokeStyle = getCSSVar('--success');
     ctx.beginPath();
     completedData.forEach((v, i) => {
@@ -1333,16 +1360,191 @@ function renderBurndownChart() {
     ctx.stroke();
 
     // Draw legend
+    ctx.font = 'bold 13px Inter';
     ctx.fillStyle = getCSSVar('--accent');
-    ctx.fillRect(W - 160, padding + 10, 12, 12);
+    ctx.fillRect(W - 200, padding + 12, 12, 12);
     ctx.fillStyle = getCSSVar('--text');
     ctx.textAlign = 'left';
-    ctx.fillText('Created', W - 140, padding + 18);
+    ctx.fillText('Created', W - 180, padding + 21);
 
     ctx.fillStyle = getCSSVar('--success');
-    ctx.fillRect(W - 160, padding + 30, 12, 12);
+    ctx.fillRect(W - 200, padding + 35, 12, 12);
     ctx.fillStyle = getCSSVar('--text');
-    ctx.fillText('Completed', W - 140, padding + 38);
+    ctx.fillText('Completed', W - 180, padding + 44);
+  }, 10);
+}
+
+// ─── Completion Rate Chart ────────────────────────────────────────────────────
+function renderCompletionRate() {
+  const allTasks = getTasksFromList();
+  const completed = allTasks.filter(t => t.done).length;
+  const total = allTasks.length;
+  const completionPct = total > 0 ? (completed / total * 100).toFixed(1) : 0;
+
+  const html = `
+    <div class="analytics-section" style="padding:24px;">
+      <div class="analytics-title">Completion Rate</div>
+      <div class="analytics-subtitle">Progress toward finishing all tasks</div>
+      <div style="position:relative; width:100%; height:280px; display:flex; align-items:center; justify-content:center; margin:24px 0;">
+        <canvas id="completionCanvas" style="max-width:100%; max-height:100%;"></canvas>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:24px;">
+        <div style="background:var(--surface); padding:16px; border-radius:8px; border-left:3px solid var(--success);">
+          <div style="font-size:0.8rem; color:var(--text-faint); margin-bottom:8px;">COMPLETED</div>
+          <div style="font-size:2.2rem; font-weight:800; color:var(--success);">${completed}</div>
+          <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">tasks done</div>
+        </div>
+        <div style="background:var(--surface); padding:16px; border-radius:8px; border-left:3px solid var(--accent);">
+          <div style="font-size:0.8rem; color:var(--text-faint); margin-bottom:8px;">REMAINING</div>
+          <div style="font-size:2.2rem; font-weight:800; color:var(--accent);">${total - completed}</div>
+          <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">tasks left</div>
+        </div>
+      </div>
+    </div>`;
+
+  document.getElementById('analyticsContent').innerHTML = html;
+
+  setTimeout(() => {
+    const canvas = document.getElementById('completionCanvas');
+    if (!canvas) return;
+    const W = 240, H = 240;
+    canvas.width = W;
+    canvas.height = H;
+    const ctx = canvas.getContext('2d');
+    const cx = W / 2, cy = H / 2, radius = 80;
+
+    ctx.clearRect(0, 0, W, H);
+
+    // Draw completed arc with gradient
+    const completedAngle = (completed / total) * Math.PI * 2;
+    ctx.fillStyle = getCSSVar('--success');
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, radius, -Math.PI / 2, -Math.PI / 2 + completedAngle);
+    ctx.closePath();
+    ctx.fill();
+
+    // Draw remaining arc
+    ctx.fillStyle = getCSSVar('--border2');
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, radius, -Math.PI / 2 + completedAngle, -Math.PI / 2 + Math.PI * 2);
+    ctx.closePath();
+    ctx.fill();
+
+    // Draw center circle (donut)
+    ctx.fillStyle = getCSSVar('--surface2');
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius * 0.6, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Draw percentage text
+    ctx.fillStyle = getCSSVar('--text-head');
+    ctx.font = 'bold 48px Playfair Display';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(completionPct + '%', cx, cy - 8);
+    
+    ctx.fillStyle = getCSSVar('--text-faint');
+    ctx.font = '11px Inter';
+    ctx.fillText('complete', cx, cy + 18);
+  }, 10);
+}
+
+// ─── On-Time Chart ────────────────────────────────────────────────────────────
+function renderOnTimeChart() {
+  const allTasks = getTasksFromList();
+  const completed = allTasks.filter(t => t.done);
+  
+  let onTime = 0;
+  let late = 0;
+  
+  completed.forEach(task => {
+    if (task.deadline && task.completedAt) {
+      const deadlineDate = new Date(task.deadline);
+      const completedDate = new Date(task.completedAt);
+      if (completedDate <= deadlineDate) {
+        onTime++;
+      } else {
+        late++;
+      }
+    }
+  });
+
+  const total = onTime + late;
+  const onTimePct = total > 0 ? (onTime / total * 100).toFixed(1) : 0;
+
+  const html = `
+    <div class="analytics-section" style="padding:24px;">
+      <div class="analytics-title">On-Time Completion %</div>
+      <div class="analytics-subtitle">Tasks finished before or on deadline</div>
+      <div style="position:relative; width:100%; height:280px; display:flex; align-items:center; justify-content:center; margin:24px 0;">
+        <canvas id="onTimeCanvas" style="max-width:100%; max-height:100%;"></canvas>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:24px;">
+        <div style="background:var(--surface); padding:16px; border-radius:8px; border-left:3px solid var(--success);">
+          <div style="font-size:0.8rem; color:var(--text-faint); margin-bottom:8px;">ON TIME</div>
+          <div style="font-size:2.2rem; font-weight:800; color:var(--success);">${onTime}</div>
+          <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">before deadline</div>
+        </div>
+        <div style="background:var(--surface); padding:16px; border-radius:8px; border-left:3px solid var(--dl-over);">
+          <div style="font-size:0.8rem; color:var(--text-faint); margin-bottom:8px;">LATE</div>
+          <div style="font-size:2.2rem; font-weight:800; color:var(--dl-over);">${late}</div>
+          <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">after deadline</div>
+        </div>
+      </div>
+      <div style="margin-top:20px; padding:16px; background:var(--surface); border-radius:8px; text-align:center; border:1px solid var(--border);">
+        <div style="font-size:0.8rem; color:var(--text-faint); margin-bottom:8px;">SUCCESS RATE</div>
+        <div style="font-size:2.2rem; font-weight:800; color:var(--accent);">${onTimePct}%</div>
+      </div>
+    </div>`;
+
+  document.getElementById('analyticsContent').innerHTML = html;
+
+  setTimeout(() => {
+    const canvas = document.getElementById('onTimeCanvas');
+    if (!canvas) return;
+    const W = 240, H = 240;
+    canvas.width = W;
+    canvas.height = H;
+    const ctx = canvas.getContext('2d');
+    const cx = W / 2, cy = H / 2, radius = 80;
+
+    ctx.clearRect(0, 0, W, H);
+
+    // Draw on-time arc
+    const onTimeAngle = (onTime / total) * Math.PI * 2;
+    ctx.fillStyle = getCSSVar('--success');
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, radius, -Math.PI / 2, -Math.PI / 2 + onTimeAngle);
+    ctx.closePath();
+    ctx.fill();
+
+    // Draw late arc
+    ctx.fillStyle = getCSSVar('--dl-over');
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, radius, -Math.PI / 2 + onTimeAngle, -Math.PI / 2 + Math.PI * 2);
+    ctx.closePath();
+    ctx.fill();
+
+    // Draw center circle (donut)
+    ctx.fillStyle = getCSSVar('--surface2');
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius * 0.6, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Draw percentage text
+    ctx.fillStyle = getCSSVar('--text-head');
+    ctx.font = 'bold 48px Playfair Display';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(onTimePct + '%', cx, cy - 8);
+    
+    ctx.fillStyle = getCSSVar('--text-faint');
+    ctx.font = '11px Inter';
+    ctx.fillText('on time', cx, cy + 18);
   }, 10);
 }
 
